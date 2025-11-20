@@ -27,7 +27,7 @@ struct ContentView: View {
                 Spacer().frame(height: 60)
                 
                 NavigationLink {
-                    SelectNumberOfQuestionView()
+                    SelectNumberOfQuestionView(mainNumber: selectedTable)
                 } label: {
                     Text("Proceed")
                         .font(.headline)
