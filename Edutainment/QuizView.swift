@@ -1,17 +1,10 @@
-//
-//  QuizView.swift
-//  Edutainment
-//
-//  Created by Hafizur Rahman on 20/11/25.
-//
-
 import SwiftUI
 
 struct QuizView: View {
     @Environment(\.dismiss) private var dismiss
     
     let mainNumber: Int
-    let numberOfQuestion: Int 
+    let numberOfQuestion: Int
     
     @State private var attampedQuestion: Int = 1
     @State private var selectedAnswer: Int? = nil
@@ -19,6 +12,12 @@ struct QuizView: View {
     @State private var answerDisabled: Bool = false
     @State private var multiplyNumber: Int = Int.random(in: 2...20)
     @State private var options = [Int]()
+    
+        // NEW: Track correct answers
+    @State private var correctAnswers: Int = 0
+    
+        // NEW: Show result screen
+    @State private var showResult: Bool = false
     
     var answer: Int { mainNumber * multiplyNumber }
     
@@ -38,65 +37,93 @@ struct QuizView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 32) {
-                Text("\(mainNumber) x \(multiplyNumber) = ?")
-                    .font(.largeTitle.bold())
-                    .fontDesign(.rounded)
-                
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 16),
-                        GridItem(.flexible())
-                    ],
-                    spacing: 16
-                ) {
-                    ForEach(options, id: \.self) { index in
-                        Button {
-                            selectedAnswer = index
-                            continueDisabled = false
-                            answerDisabled = true
-                        } label: {
-                            Text("\(index)")
-                                .font(.title.bold())
-                                .fontDesign(.rounded)
-                                .frame(height: 80)
-                                .frame(maxWidth: .infinity)
-                                .background(backgroundColor(for: index))
-                                .clipShape(.rect(cornerRadius: 24))
-                        }
-                        .buttonStyle(.plain)
-                        .buttonSizing(.flexible)
-                        .disabled(answerDisabled)
-                    }
-                }
-                
-                Button {
-                    if attampedQuestion == numberOfQuestion {
+            if showResult {
+                ResultView(
+                    result: QuizResult(
+                        totalQuestions: numberOfQuestion,
+                        correctAnswers: correctAnswers
+                    ),
+                    onRestart: {
                         attampedQuestion = 1
-                        continueDisabled = false
-                        answerDisabled = true
-                    } else {
-                        multiplyNumber = Int.random(in: 2...20)
-                        generateNewQuestion()
+                        correctAnswers = 0
                         selectedAnswer = nil
                         continueDisabled = true
                         answerDisabled = false
-                        attampedQuestion += 1
-                    }
-                } label: {
-                    Text(attampedQuestion == numberOfQuestion ? "Restart" : "Continue")
-                        .font(.headline)
+                        multiplyNumber = Int.random(in: 2...20)
+                        generateNewQuestion()
+                        showResult = false
+                    },
+                    onExit: { dismiss() }
+                )
+            } else {
+                VStack(spacing: 32) {
+                    Spacer().frame(height: 0)
+                    ProgressView(value: Double(attampedQuestion), total: Double(numberOfQuestion))
+                        .tint(.purple)
+                    
+                    Spacer()
+                    
+                    Text("\(mainNumber) x \(multiplyNumber) = ?")
+                        .font(.largeTitle.bold())
                         .fontDesign(.rounded)
-                        .padding(.vertical)
-                        .frame(maxWidth: .infinity)
+                    
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible(), spacing: 16),
+                            GridItem(.flexible())
+                        ],
+                        spacing: 16
+                    ) {
+                        ForEach(options, id: \.self) { index in
+                            Button {
+                                selectedAnswer = index
+                                continueDisabled = false
+                                answerDisabled = true
+                                if index == answer {
+                                    correctAnswers += 1
+                                }
+                            } label: {
+                                Text("\(index)")
+                                    .font(.title.bold())
+                                    .fontDesign(.rounded)
+                                    .frame(height: 80)
+                                    .frame(maxWidth: .infinity)
+                                    .background(backgroundColor(for: index))
+                                    .clipShape(.rect(cornerRadius: 24))
+                            }
+                            .buttonStyle(.plain)
+                            .buttonSizing(.flexible)
+                            .disabled(answerDisabled)
+                        }
+                    }
+                    Button {
+                        if attampedQuestion == numberOfQuestion {
+                            showResult = true
+                        } else {
+                            multiplyNumber = Int.random(in: 2...20)
+                            generateNewQuestion()
+                            selectedAnswer = nil
+                            continueDisabled = true
+                            answerDisabled = false
+                            attampedQuestion += 1
+                        }
+                    } label: {
+                        Text(attampedQuestion == numberOfQuestion ? "See Results" : "Continue")
+                            .font(.headline)
+                            .fontDesign(.rounded)
+                            .padding(.vertical)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .tint(attampedQuestion == numberOfQuestion ? .green : .blue)
+                    .buttonStyle(.glassProminent)
+                    .buttonSizing(.flexible)
+                    .disabled(continueDisabled)
+                    
+                    Spacer()
                 }
-                .tint(attampedQuestion == numberOfQuestion ? .green : .blue)
-                .buttonStyle(.glassProminent)
-                .buttonSizing(.flexible)
-                .disabled(continueDisabled)
+                .padding(.horizontal, 32)
+                .onAppear { if options.isEmpty { generateNewQuestion() } }
             }
-            .padding(.horizontal, 32)
-            .onAppear { if options.isEmpty { generateNewQuestion() } }
         }
     }
     

@@ -1,45 +1,57 @@
-//
-//  ContentView.swift
-//  Edutainment
-//
-//  Created by Hafizur Rahman on 20/11/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedTable: Int = Int.random(in: 2...12)
+    @State private var selectedTable = Int.random(in: 2...12)
     
     var body: some View {
         NavigationStack {
-            VStack {
-                Text("Which multiplication table you want to practice?")
-                    .font(.title.bold())
-                    .fontDesign(.rounded)
-                    .multilineTextAlignment(.center)
-                Spacer().frame(height: 60)
-                Stepper(value: $selectedTable, in: 2...12, step: 1) {
-                    Text("Selecte Table: \(selectedTable)")
-                        .font(.title3)
-                        .fontWeight(.semibold)
+            VStack(spacing: 40) {
+                VStack(spacing: 16) {
+                    Text("🎯")
+                        .font(.system(size: 72))
+                    
+                    Text("Multiplication Practice")
+                        .font(.largeTitle.bold())
                         .fontDesign(.rounded)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Which table do you want to practice?")
+                        .font(.title3)
+                        .fontDesign(.rounded)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
-                Spacer().frame(height: 60)
+                
+                VStack(spacing: 24) {
+                    Text("\(selectedTable)")
+                        .font(.system(size: 80, weight: .bold, design: .rounded))
+                        .foregroundStyle(.purple)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: selectedTable)
+                    
+                    Stepper(value: $selectedTable, in: 2...12) {
+                        Text("Times Table")
+                            .font(.title3)
+                            .fontDesign(.rounded)
+                    }
+                }
+                .padding(24)
+                .background(.purple.opacity(0.1))
+                .cornerRadius(20)
                 
                 NavigationLink {
                     SelectNumberOfQuestionView(mainNumber: selectedTable)
                 } label: {
-                    Text("Proceed")
+                    Text("Continue")
                         .font(.headline)
                         .fontDesign(.rounded)
-                        .padding(.vertical)
+                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(.purple)
+                        .cornerRadius(16)
                 }
-                .tint(.purple)
-                .buttonStyle(.glassProminent)
-                .buttonSizing(.flexible)
             }
-            .padding(.horizontal, 32)
+            .padding(32)
         }
     }
 }
